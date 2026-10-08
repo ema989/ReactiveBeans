@@ -1,5 +1,6 @@
 package entities;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,15 +24,15 @@ public class SimpleObservableValue<T> implements ObservableValue<T> {
         listenerSet.add(listener);
     }
 
+    public SimpleObservableValue(T initialValue, Collection<? extends ValueChangeListener<T>> listeners) {
+        this(observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null"));
+        listenerSet.addAll(listeners);
+    }
+
     @SafeVarargs
     public SimpleObservableValue(T initialValue, ValueChangeListener<T>... listeners) {
         this(observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null"));
         Collections.addAll(listenerSet, listeners);
-    }
-
-    public SimpleObservableValue(T initialValue, Collection<? extends ValueChangeListener<T>> listener) {
-        this(observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null"));
-        listenerSet.addAll(listener);
     }
 
     @Override
@@ -66,6 +67,17 @@ public class SimpleObservableValue<T> implements ObservableValue<T> {
     @Override
     public boolean removeListener(ValueChangeListener<T> listener) {
         return listenerSet.remove(listener);
+    }
+
+    @Override
+    public boolean removeListener(Collection<? extends ValueChangeListener<T>> listeners) {
+        return listenerSet.removeAll(Objects.requireNonNull(listeners, "listeners can't be null"));
+    }
+
+    @Override
+    @SafeVarargs
+    public final boolean removeListener(ValueChangeListener<T>... listeners) {
+        return this.removeListener(Arrays.asList(listeners));
     }
 
     @Override

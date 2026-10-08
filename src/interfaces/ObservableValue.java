@@ -15,5 +15,9 @@ public interface ObservableValue<T> {
 
     boolean removeListener(ValueChangeListener<T> listener);
 
+    boolean removeListener(Collection<? extends ValueChangeListener<T>> listeners);
+
+    boolean removeListener(@SuppressWarnings("unchecked") ValueChangeListener<T>... listeners);
+
     void removeAllListeners();
 }
