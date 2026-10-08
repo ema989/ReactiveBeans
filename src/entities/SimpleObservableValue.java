@@ -1,8 +1,7 @@
 package entities;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -20,31 +19,45 @@ public class SimpleObservableValue<T> implements ObservableValue<T> {
     }
 
     public SimpleObservableValue(T initialValue, ValueChangeListener<T> listener) {
-        this(observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null"));
-        listenerSet.add(listener);
+        this(initialValue);
+        if (listener != null)
+            this.addListener(listener);
     }
 
     public SimpleObservableValue(T initialValue, Collection<? extends ValueChangeListener<T>> listeners) {
-        this(observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null"));
-        listenerSet.addAll(listeners);
+        this(initialValue);
+        if (listeners != null)
+            this.addListeners(listeners);
     }
 
     @SafeVarargs
     public SimpleObservableValue(T initialValue, ValueChangeListener<T>... listeners) {
-        this(observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null"));
-        Collections.addAll(listenerSet, listeners);
+        this(initialValue);
+        if (listeners != null)
+            this.addListeners(listeners);
     }
 
     @Override
-    public void setValue(T newValue) {
-        Objects.requireNonNull(newValue, "newValue can't be null");
+    public boolean setValue(T newValue) {
         T oldValue = observableValue;
 
-        if (newValue.equals(oldValue))
-            return;
+        // Handles safe comparison even when oldValue or newValue are null
+        if (Objects.equals(oldValue, newValue))
+            return false;
+
         observableValue = newValue;
-        if (!listenerSet.isEmpty())
-            listenerSet.forEach(listener -> listener.onChange(oldValue, newValue));
+        if (!listenerSet.isEmpty()) {
+            // Defensive copy to prevent ConcurrentModificationException if a listener
+            // removes or adds itself
+            for (ValueChangeListener<T> listener : new ArrayList<>(listenerSet)) {
+                try {
+                    listener.onChange(oldValue, newValue);
+                } catch (Exception e) {
+                    System.err.println("Exception during listener notification: " + e.getMessage());
+                }
+            }
+        }
+        return true;
     }
 
     @Override
@@ -58,30 +71,8 @@ public class SimpleObservableValue<T> implements ObservableValue<T> {
     }
 
     @Override
-    @SafeVarargs
-    public final boolean addListener(ValueChangeListener<T>... listeners) {
-        return Collections.addAll(listenerSet, listeners);
-    }
-
-    @Override
-    public boolean addListeners(Collection<? extends ValueChangeListener<T>> listeners) {
-        return listenerSet.addAll(listeners);
-    }
-
-    @Override
     public boolean removeListener(ValueChangeListener<T> listener) {
         return listenerSet.remove(listener);
-    }
-
-    @Override
-    public boolean removeListener(Collection<? extends ValueChangeListener<T>> listeners) {
-        return listenerSet.removeAll(Objects.requireNonNull(listeners, "listeners can't be null"));
-    }
-
-    @Override
-    @SafeVarargs
-    public final boolean removeListener(ValueChangeListener<T>... listeners) {
-        return this.removeListener(Arrays.asList(listeners));
     }
 
     @Override
