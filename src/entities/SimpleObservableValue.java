@@ -37,8 +37,12 @@ public class SimpleObservableValue<T> implements ObservableValue<T> {
 
     @Override
     public void setValue(T newValue) {
+        Objects.requireNonNull(newValue, "newValue can't be null");
         T oldValue = observableValue;
-        observableValue = Objects.requireNonNull(newValue, "newValue can't be null");
+
+        if (newValue.equals(oldValue))
+            return;
+        observableValue = newValue;
         if (!listenerSet.isEmpty())
             listenerSet.forEach(listener -> listener.onChange(oldValue, newValue));
     }
