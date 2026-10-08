@@ -15,7 +15,7 @@ public class SimpleObservableValue<T> implements ObservableValue<T> {
     private Set<ValueChangeListener<T>> listenerSet = new HashSet<>();
 
     public SimpleObservableValue(T initialValue) {
-        observableValue = Objects.requireNonNull(initialValue, "initialValue can't be null");
+        observableValue = initialValue;
     }
 
     public SimpleObservableValue(T initialValue, ValueChangeListener<T> listener) {
