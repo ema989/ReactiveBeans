@@ -14,6 +14,17 @@ A lightweight, robust, and clean Java library implementing observable values and
 
 ---
 
+## Why ReactiveBeans?
+
+While heavy reactive programming frameworks (like RxJava or Project Reactor) or framework-specific solutions (like JavaFX Properties) exist, **ReactiveBeans** was built to fill a specific gap:
+
+- **Zero Dependencies**: A lightweight, standalone library that doesn't drag along massive ecosystems. Perfect for lightweight Java applications, custom tools, or desktop utilities.
+- **Memory-Leak Safety out-of-the-box**: Standard listener patterns in Java often lead to memory leaks if developers forget to unregister them. ReactiveBeans addresses this via `WeakValueChangeListener`, automatically cleaning up dead listeners reclaimed by the Garbage Collector.
+- **Predictable Binding**: Features built-in loop protection (`isUpdating` flags) and atomic updates to ensure complex unidirectional data bindings remain stable and safe from recursion errors.
+- **Educational & Clean Design**: Built with clean, standard Java idioms, making it an excellent resource for developers wanting to understand the inner workings of the Observer pattern, weak references, and robust concurrency control.
+
+---
+
 ## Project Structure
 
 ```text
