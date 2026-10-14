@@ -1,16 +1,18 @@
 # ReactiveBeans
 
-A lightweight, robust, and clean Java library implementing observable values and unidirectional data binding. It is specifically designed to prevent common pitfalls such as memory leaks (via weak references), recursive loops during updates, and unhandled listener exceptions.
+A lightweight, robust, and thread-safe Java library for observable values and unidirectional data binding. Designed to prevent common pitfalls such as memory leaks (via weak references), recursive loops during updates, unhandled listener exceptions, and thread concurrency issues.
 
 ---
 
 ## Features
 
-- **Observable Values**: Track state changes efficiently with clean interfaces and support for initial listeners (via values, collections, or varargs).
-- **Unidirectional Binding (`Bindable`)**: Link multiple values together so that updates propagate seamlessly from source to targets, with immediate initial value synchronization.
-- **Memory Leak Protection**: Built-in `WeakValueChangeListener` wrapper leveraging `WeakReference` to automatically unregister dead listeners when reclaimed by the Garbage Collector.
-- **Loop & Concurrency Safety**: Uses execution guards (`isUpdating` flags protected by `try-finally` blocks) to prevent infinite loops during propagation and defensive copying of collections to avoid `ConcurrentModificationException`.
-- **Exception Isolation**: Errors within individual listeners or binding targets are caught and safely logged, preventing one faulty component from breaking the entire notification flow.
+- **Observable Values**: Track state changes with standard or thread-safe implementations.
+- **Thread-Safe Concurrency**: Built-in support using `ReentrantLock` (`SynchronizedSimpleObservableValue` and `SynchronizedBindableObservableValue`) with deadlock prevention mechanisms.
+- **Unidirectional Binding (`Bindable`)**: Link multiple values together so updates propagate seamlessly from source to target.
+- **Memory Leak Protection**: Built-in `WeakValueChangeListener` wrapper that automatically unregisters dead listeners when reclaimed by the Garbage Collector.
+- **Loop & Concurrency Safety**: Uses execution guards (`isUpdating` flags with `try-finally` blocks) to prevent infinite loops during bidirectional/chained bindings.
+- **Exception Isolation**: Errors within individual listeners or binding targets are caught and logged, preventing one faulty listener from breaking the entire notification chain.
+- **Defensive Copying**: Collections are safely cloned during iteration to avoid `ConcurrentModificationException` if listeners modify subscriptions inline.
 
 ---
 
@@ -36,6 +38,8 @@ src/
 └── entities/
     ├── SimpleObservableValue.java
     ├── BindableObservableValue.java
+    ├── SynchronizedSimpleObservableValue.java
+    ├── SynchronizedBindableObservableValue.java
     └── WeakValueChangeListener.java
 ```
 
@@ -92,7 +96,23 @@ sourcePort.setValue(9090);
 System.out.println(targetPort.getValue()); // Output: 9090
 ```
 
-### 3. Preventing Memory Leaks with Weak Listeners
+### 3. Thread-Safe Observables (SynchronizedSimpleObservableValue & SynchronizedBindableObservableValue)
+```java
+import entities.SynchronizedBindableObservableValue;
+
+SynchronizedBindableObservableValue<Double> temperature = new SynchronizedBindableObservableValue<>(25.0);
+SynchronizedBindableObservableValue<Double> displayTemp = new SynchronizedBindableObservableValue<>(0.0);
+
+// Safe binding across threads
+temperature.bindWith(displayTemp);
+
+// Can be safely updated from concurrent threads
+new Thread(() -> {
+    temperature.setValue(28.5);
+}).start();
+```
+
+### 4. Preventing Memory Leaks with Weak Listeners
 ```java
 import entities.SimpleObservableValue;
 import entities.WeakValueChangeListener;
